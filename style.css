@@ -31,3 +31,39 @@ body,button,input,textarea{font-family:"MS Gothic","Osaka-Mono","Courier New",mo
 .desktop-icon.featured-social{padding:8px 5px;min-height:118px}.featured-social b{font-size:20px}.featured-social small{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .social-qr-body{display:grid;grid-template-columns:190px 1fr;gap:22px;align-items:center;background:#f4f6fc!important}.social-qr{width:190px;height:190px;image-rendering:pixelated;border:8px solid white;box-shadow:2px 2px 0 #8495bf}.social-qr-body h1{font-size:32px;margin:6px 0}.social-qr-body p{font-size:16px}.social-open-button{display:inline-block;margin:10px 0;padding:10px 15px;background:#d5e1fa;border:2px outset #fff;color:#173c86;font-weight:bold;text-decoration:none}.social-open-button:active{border-style:inset}.social-help{font-size:12px!important;color:#6578a5;line-height:1.5}
 @media(max-width:800px){.featured-social .social-image{width:42px;height:42px}.desktop-icon.featured-social{min-height:82px}.social-window{width:92vw!important;left:4vw!important}.social-qr-body{grid-template-columns:130px 1fr;gap:12px;padding:14px!important}.social-qr{width:130px;height:130px}.social-qr-body h1{font-size:23px}.social-help{display:none}}
+
+/* v7: desktop layout pass. Keep the desktop anchored and predictable at full PC size. */
+@media (min-width:801px){
+  .desktop{position:fixed;inset:0 0 48px;overflow:hidden}
+  .icons{
+    position:absolute!important;left:22px!important;top:22px!important;
+    width:278px!important;max-height:none!important;overflow:visible!important;
+    display:grid!important;grid-template-columns:124px 124px!important;
+    grid-auto-rows:112px!important;gap:12px 14px!important;
+    align-items:start!important;justify-items:start!important;padding:0!important;
+    z-index:4!important;
+  }
+  .desktop-icon{width:124px!important;height:108px!important;min-height:108px!important;margin:0!important;padding:5px!important}
+  .desktop-icon.featured-social{height:108px!important;min-height:108px!important;background:#f5f7ffed!important;border:2px outset #fff!important;box-shadow:4px 5px 0 #1d356d88!important}
+  .featured-social .social-image{width:66px!important;height:58px!important;margin:0 auto 1px!important}
+  .featured-social b{font-size:18px!important}.featured-social small{font-size:10px!important;max-width:116px!important}
+  .gadgets{position:absolute!important;inset:0!important;z-index:2!important;pointer-events:none!important}
+  .gadget{pointer-events:auto!important}
+  .schedule-gadget{
+    position:absolute!important;left:auto!important;top:auto!important;
+    right:22px!important;bottom:18px!important;width:360px!important;
+    min-height:168px!important;margin:0!important;
+  }
+  .stream-gadget{position:absolute!important;left:auto!important;right:22px!important;top:160px!important;width:360px!important;margin:0!important}
+  .desktop-title{right:22px!important;top:24px!important}
+}
+@media (min-width:1500px){
+  .icons{left:30px!important;top:28px!important;gap:16px!important}
+  .schedule-gadget{right:30px!important;bottom:22px!important;width:390px!important}
+  .stream-gadget{right:30px!important;width:390px!important}
+  .desktop-title{right:30px!important}
+}
+/* SNS QR dialog is deliberately centered so it cannot hide off-screen. */
+.social-window{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 40px))!important;min-width:0!important}
+.social-window .social-qr{display:block!important;background:#fff!important;object-fit:contain!important;image-rendering:auto!important}
+@media(max-width:800px){.social-window{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important}}

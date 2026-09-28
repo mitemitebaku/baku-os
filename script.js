@@ -30,7 +30,7 @@ setTimeout(()=>document.getElementById('boot').classList.add('hide'),1600);rende
 const $=id=>document.getElementById(id);
 function textNode(tag,text){const el=document.createElement(tag);el.textContent=text||'';return el}
 function renderStream(){const s=content.nextStream; $('nextTime').textContent=s.time||'--:--';$('nextTitle').textContent=s.title||'次回未定';$('nextDesc').textContent=s.description||'';$('nextDate').textContent=s.date||'';const list=$('scheduleList');list.replaceChildren();const a=document.createElement('article');const t=textNode('time',s.date||'未定');const tm=textNode('strong',s.time||'--:--');const div=document.createElement('div');div.append(textNode('h2',s.title||'次回未定'),textNode('p',s.description));a.append(t,tm,div);list.append(a)}
-function renderLinks(){for(const [id,url] of [['tiktokLink',content.links.tiktok],['xLink',content.links.x]]){const a=$(id);a.href=/^https:\/\//.test(url||'')?url:'#'}}
+function renderLinks(){}
 renderStream();renderLinks();
 
 
@@ -48,10 +48,10 @@ const previousOpenWindow=openWindow;openWindow=function(name){if(name==='schedul
 document.querySelector('.schedule-gadget').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openWindow('schedule')}});
 renderCalendar();
 
-// v6: SNS desktop shortcuts. Open the service in a new tab and leave a QR shortcut window on the BAKU OS desktop.
+// v7: SNS desktop shortcuts open a QR window first. The external site opens only from the button inside it.
 const socialProfiles={
   tiktok:{name:'TikTok',handle:'@mitemite_siroiinu',url:'https://www.tiktok.com/@mitemite_siroiinu?_r=1&_t=ZS-9A6LfCwRZhs',qr:'assets/tiktok-qr.png'},
   x:{name:'X',handle:'@mitemite_baku',url:'https://x.com/mitemite_baku?s=11',qr:'assets/x-qr.png'}
 };
 function showSocialShortcut(key){const s=socialProfiles[key];if(!s)return;document.getElementById('socialWindowTitle').textContent='🌐 '+s.name+' Shortcut';document.getElementById('socialName').textContent=s.name;document.getElementById('socialHandle').textContent=s.handle;document.getElementById('socialQr').src=s.qr;document.getElementById('socialQr').alt=s.name+' QRコード';const a=document.getElementById('socialOpenLink');a.href=s.url;a.textContent=s.name+'を開く ↗';openWindow('social')}
-document.querySelectorAll('.social-launch').forEach(a=>a.addEventListener('click',()=>{showSocialShortcut(a.dataset.social)}));
+document.querySelectorAll('.social-launch').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showSocialShortcut(a.dataset.social)}));
