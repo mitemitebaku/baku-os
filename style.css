@@ -67,3 +67,22 @@ body,button,input,textarea{font-family:"MS Gothic","Osaka-Mono","Courier New",mo
 .social-window{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 40px))!important;min-width:0!important}
 .social-window .social-qr{display:block!important;background:#fff!important;object-fit:contain!important;image-rendering:auto!important}
 @media(max-width:800px){.social-window{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important}}
+
+
+/* v8: hard layout reset. These rules intentionally come last. */
+@media (min-width:801px){
+  .icons{
+    left:8px!important; top:8px!important; width:284px!important;
+    grid-template-columns:132px 132px!important; grid-auto-rows:116px!important;
+    gap:8px 10px!important; padding:0!important; margin:0!important;
+  }
+  .icons > .desktop-icon:first-child{grid-column:1!important;grid-row:1!important;align-self:start!important;justify-self:start!important}
+  .schedule-gadget{right:14px!important;bottom:10px!important;width:380px!important}
+}
+/* Calendar is visually a calendar, with event text directly in the date cell. */
+.calendar-day{min-height:92px!important;display:flex!important;flex-direction:column!important;gap:5px!important;overflow:hidden!important}
+.calendar-day-number{font-weight:bold;font-size:16px;line-height:1}
+.calendar-event{display:block;background:#dbe5fb;border-left:3px solid #4e6fb8;padding:4px 5px;font-size:11px;line-height:1.25;text-align:left;white-space:normal;overflow:hidden;color:#183875}
+.calendar-event b{display:block;font-size:11px}
+.calendar-day.has-stream:after{display:none!important}
+@media(max-width:800px){.calendar-day{min-height:68px!important}.calendar-event{font-size:9px;padding:2px}.calendar-event b{font-size:9px}}
