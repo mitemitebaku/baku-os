@@ -1,5 +1,5 @@
 const windows=[...document.querySelectorAll('[data-window]')], tasks=document.getElementById('tasks'), startMenu=document.getElementById('startMenu');
-const titles={schedule:'SCHEDULE.exe',contents:'STREAM_CONTENTS',mail:'MAIL.exe',files:'MY_DREAMS',diary:'dream_diary.txt',about:'ばくについて.txt',player:'Media Player',trash:'ごみ箱',note:'メモ帳',secret:'???',error:'BAKU OS'};let topZ=30;
+const titles={schedule:'SCHEDULE.exe',contents:'STREAM_CONTENTS',mail:'MAIL.exe',profile:'ABOUT.html',diary:'dream_diary.txt',player:'Media Player',trash:'ごみ箱',note:'メモ帳',secret:'???',error:'BAKU OS'};let topZ=30;
 const win=n=>document.querySelector(`[data-window="${n}"]`);
 function focusWindow(el){windows.forEach(w=>w.classList.remove('active'));el.classList.add('active');el.style.zIndex=++topZ;renderTasks()}
 function openWindow(name){const el=win(name);if(!el)return;el.hidden=false;delete el.dataset.minimized;focusWindow(el);startMenu.hidden=true;if(name==='mail'){markMailRead();renderMail()}}
@@ -12,11 +12,11 @@ windows.forEach(w=>{w.addEventListener('mousedown',()=>focusWindow(w));const bar
 const details={game:['GAME / ゲーム','ホラー、インディー、謎ゲー、参加型など。上手さより「なんだこれ！」をみんなで楽しむ配信。初見さんもコメントから気軽にどうぞ。'],talk:['TALK / 雑談','朝のニュース雑談から深夜のゆるい話まで。コメントを拾いながら、予定外の方向へよく脱線します。'],sing:['SING / 歌','歌枠、リクエスト、弾き語りや音楽制作の話など。'],sleep:['READING / SLEEP','朗読、寝かしつけ、睡眠導入。眠る前に流しておける夜の終点みたいな配信です。'],event:['EVENT / 参加型','コメント、ゲーム、企画を使って視聴者も画面の中へ。']};
 function showDetail(k){const d=details[k];document.getElementById('detail').innerHTML=`<small>OPENED FILE</small><h2>${d[0]}</h2><p>${d[1]}</p>`}
 document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>showDetail(b.dataset.detail));document.querySelectorAll('[data-detail-open]').forEach(b=>b.onclick=()=>{openWindow('contents');showDetail(b.dataset.detailOpen)});
-const content=window.BAKU_CONTENT||{mails:[],diary:[]};
-function renderMail(selected=0){const list=document.getElementById('mailList');list.innerHTML='';content.mails.forEach((m,i)=>{const b=document.createElement('button');b.className='mail-item'+(i===selected?' active':'');b.innerHTML=`<b>${m.subject}</b><small>${m.date}</small>`;b.onclick=()=>renderMail(i);list.appendChild(b)});const m=content.mails[selected];if(m)document.getElementById('mailBody').innerHTML=`<small>From: ばく　/　${m.date}</small><h1>${m.subject}</h1><p>${m.body}</p>`}
-function renderDiary(){document.getElementById('diaryBody').innerHTML=content.diary.map(d=>`<h2>${d.date}</h2><p>${d.body.replace(/\n/g,'<br>')}</p>`).join('')}
+const content=structuredClone(window.BAKU_CONTENT||{mails:[],diary:[]});content.mails ||= [];content.diary ||= [];content.nextStream ||= {};content.links ||= {};
+function renderMail(selected=0){const list=document.getElementById('mailList');list.replaceChildren();content.mails.forEach((m,i)=>{const b=document.createElement('button');b.className='mail-item'+(i===selected?' active':'');const strong=document.createElement('b'),small=document.createElement('small');strong.textContent=m.subject;small.textContent=m.date;b.append(strong,small);b.onclick=()=>renderMail(i);list.appendChild(b)});const body=document.getElementById('mailBody');body.replaceChildren();const m=content.mails[selected];if(m){const small=document.createElement('small'),h=document.createElement('h1'),p=document.createElement('p');small.textContent='From: ばく / '+m.date;h.textContent=m.subject;p.textContent=m.body;p.style.whiteSpace='pre-wrap';body.append(small,h,p)}}
+function renderDiary(){const el=document.getElementById('diaryBody');el.replaceChildren();content.diary.forEach(d=>{const h=document.createElement('h2'),p=document.createElement('p');h.textContent=d.date;p.textContent=d.body;p.style.whiteSpace='pre-wrap';el.append(h,p)})}
 renderMail();renderDiary();
-const latest=content.mails[0];function markMailRead(){if(latest)localStorage.setItem('bakuLastMail',latest.id);document.getElementById('unreadBadge').hidden=true;document.getElementById('mailToast').hidden=true}
+let latest=content.mails[0];function markMailRead(){if(latest)localStorage.setItem('bakuLastMail',latest.id);document.getElementById('unreadBadge').hidden=true;document.getElementById('mailToast').hidden=true}
 function mailStatus(){if(latest&&localStorage.getItem('bakuLastMail')!==latest.id)document.getElementById('unreadBadge').hidden=false}mailStatus();
 // 30秒後の新着通知。音声ファイルを追加したら下のコメントを外して利用できます。
 setTimeout(()=>{if(latest&&localStorage.getItem('bakuLastMail')!==latest.id){document.getElementById('toastSubject').textContent=latest.subject;document.getElementById('mailToast').hidden=false;/* new Audio('mail.mp3').play().catch(()=>{}); */}},30000);
@@ -25,3 +25,10 @@ let visits=Number(localStorage.getItem('bakuVisits')||0)+1;localStorage.setItem(
 let idle;const saver=document.getElementById('screensaver'),sm=document.getElementById('screenMessage');function resetIdle(){clearTimeout(idle);if(!saver.hidden){saver.hidden=true;sessionStorage.setItem('returned','1')}idle=setTimeout(()=>{sm.innerHTML='☾<br><br>good night.';saver.hidden=false;setTimeout(()=>{if(!saver.hidden)sm.innerHTML='☾<br><br>good night.<br><br><small>まだいる？</small>'},20000)},60000)}['mousemove','keydown','pointerdown','touchstart'].forEach(x=>addEventListener(x,resetIdle,{passive:true}));resetIdle();
 document.getElementById('logout').onclick=()=>{document.getElementById('shutdownScreen').hidden=false;startMenu.hidden=true};document.getElementById('wakeButton').onclick=()=>document.getElementById('shutdownScreen').hidden=true;
 setTimeout(()=>document.getElementById('boot').classList.add('hide'),1600);renderTasks();
+
+// Public website: read-only content rendering. EDIT.exe is not shipped on GitHub Pages.
+const $=id=>document.getElementById(id);
+function textNode(tag,text){const el=document.createElement(tag);el.textContent=text||'';return el}
+function renderStream(){const s=content.nextStream; $('nextTime').textContent=s.time||'--:--';$('nextTitle').textContent=s.title||'次回未定';$('nextDesc').textContent=s.description||'';$('nextDate').textContent=s.date||'';const list=$('scheduleList');list.replaceChildren();const a=document.createElement('article');const t=textNode('time',s.date||'未定');const tm=textNode('strong',s.time||'--:--');const div=document.createElement('div');div.append(textNode('h2',s.title||'次回未定'),textNode('p',s.description));a.append(t,tm,div);list.append(a)}
+function renderLinks(){for(const [id,url] of [['tiktokLink',content.links.tiktok],['xLink',content.links.x]]){const a=$(id);a.href=/^https:\/\//.test(url||'')?url:'#'}}
+renderStream();renderLinks();
