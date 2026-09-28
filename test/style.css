@@ -248,3 +248,13 @@ body.glitch-hit #desktop{animation:desktopJolt .14s steps(2,end) 1}
 #visitCounter{font-size:10px;letter-spacing:.12em;opacity:.68}
 .restore-box{margin-top:14px;padding:12px;border:1px dotted #49628f;background:#e7edfb}.restore-box input{max-width:180px}.restore-result{white-space:pre-line;margin-top:10px}.test-build-badge{position:fixed;right:12px;top:10px;z-index:9999;font:10px monospace;letter-spacing:.12em;opacity:.55;pointer-events:none}
 @media(max-width:700px){.glitch-layer{position:fixed}.test-build-badge{font-size:8px;right:6px;top:4px}}
+
+/* v15: glitch is intentionally visible on desktop and mobile */
+.glitch-layer{opacity:.30!important;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,rgba(10,20,70,.12) 3px 4px)!important;animation:crtDrift 2.8s steps(2,end) infinite!important}
+.glitch-layer::before{height:10px!important;box-shadow:0 0 12px rgba(170,230,255,.95),0 18px 0 rgba(255,255,255,.15)!important;animation:scanGlitch 4.4s infinite!important}
+.glitch-layer::after{height:5px!important;animation:scanGlitch 6.1s -2.3s infinite!important}
+body.glitch-hit #desktop{animation:desktopJolt .26s steps(3,end) 1!important;filter:contrast(1.12) saturate(1.18)}
+body.glitch-hit .glitch-layer{opacity:.72!important}
+@keyframes desktopJolt{0%{transform:translate(0,0)}25%{transform:translate(5px,-1px)}50%{transform:translate(-4px,1px)}75%{transform:translate(2px,0)}100%{transform:translate(0,0)}}
+@keyframes crtDrift{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+@keyframes scanGlitch{0%,78%,100%{top:8%;opacity:0}79%{top:12%;opacity:.85}82%{top:56%;opacity:.55}84%{top:78%;opacity:0}}

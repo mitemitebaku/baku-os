@@ -94,7 +94,7 @@ function chapterEnding(){return 'あれれ、起こしてくれてありがと�
 function showMysteryFile(file){passwordForm.hidden=true;const status=document.getElementById('mysteryPasswordStatus');status.textContent='';
  if(file==='intro')mysteryText('はじめに.txt','もしここを見つけたら、最初にメールを読んで。\n\n消した夢は、ごみ箱で眠ってる。\n眠ってるものを起こすとき、朝いちばんになんて言う？\n\n……でも、まだ数字を探さないで。順番があるから。');
  if(file==='yesterday')mysteryText('きのうの夢.txt','きのうも、同じ時間に目が覚めた。\n\n時計は三時を少し過ぎたところで止まっていた。\nごみ箱から、画像をひとつ消した。\n\n名前はたしか dream20090813。\n日付がひとつだけ、合っていなかった気がする。');
- if(file==='locked'){if(localStorage.getItem('bakuChapter1Solved')==='yes'){mysteryText('ひらかないで.txt',chapterEnding());return}mysteryText('ひらかないで.txt','このファイルは保護されています。\n\n数字4桁のパスワードが必要です。\n削除された夢を正しく復元すると、どこかに残るらしい。');passwordForm.hidden=false;document.getElementById('mysteryPassword').focus()}}
+ if(file==='locked'){mysteryText('ひらかないで.txt','このファイルは保護されています。\n\n数字4桁のパスワードが必要です。\n削除された夢を正しく復元すると、どこかに残るらしい。');passwordForm.hidden=false;document.getElementById('mysteryPassword').value='';document.getElementById('mysteryPasswordStatus').textContent=localStorage.getItem('bakuChapter1Solved')==='yes'?'以前に解除済みです。もう一度入力すると内容を表示します。':'';document.getElementById('mysteryPassword').focus()}}
 document.querySelectorAll('[data-mystery-file]').forEach(b=>b.addEventListener('click',()=>showMysteryFile(b.dataset.mysteryFile)));
 passwordForm.addEventListener('submit',e=>{e.preventDefault();const val=document.getElementById('mysteryPassword').value.trim();if(val==='0818'){localStorage.setItem('bakuChapter1Solved','yes');passwordForm.hidden=true;mysteryText('ひらかないで.txt',chapterEnding())}else{document.getElementById('mysteryPasswordStatus').textContent='ACCESS DENIED / パスワードが違います。'}});
 function openDeletedDream(){
@@ -109,4 +109,4 @@ document.getElementById('dreamFile').addEventListener('click',openDeletedDream);
 // Local visit indicator. This is intentionally honest: GitHub Pages alone cannot know the global visitor number.
 const vc=document.getElementById('visitCounter');if(vc)vc.textContent=`THIS DEVICE : VISIT #${visits}`;
 // Occasional subtle glitch. It never blocks controls and respects reduced-motion preference.
-if(!matchMedia('(prefers-reduced-motion: reduce)').matches){setInterval(()=>{if(Math.random()<.42){document.body.classList.add('glitch-hit');setTimeout(()=>document.body.classList.remove('glitch-hit'),170)}},4200)}
+setInterval(()=>{document.body.classList.add('glitch-hit');setTimeout(()=>document.body.classList.remove('glitch-hit'),260)},2600);
