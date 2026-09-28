@@ -1,5 +1,5 @@
 const windows=[...document.querySelectorAll('[data-window]')], tasks=document.getElementById('tasks'), startMenu=document.getElementById('startMenu');
-const titles={schedule:'SCHEDULE.exe',contents:'STREAM_CONTENTS',mail:'MAIL.exe',profile:'ABOUT.html',diary:'dream_diary.txt',player:'Media Player',trash:'ごみ箱',note:'メモ帳',secret:'???',error:'BAKU OS'};let topZ=30;
+const titles={schedule:'SCHEDULE.exe',contents:'STREAM_CONTENTS',mail:'MAIL.exe',profile:'ABOUT.html',diary:'dream_diary.txt',player:'Media Player',trash:'ごみ箱',note:'メモ帳',secret:'???',error:'BAKU OS',social:'SNS Shortcut'};let topZ=30;
 const win=n=>document.querySelector(`[data-window="${n}"]`);
 function focusWindow(el){windows.forEach(w=>w.classList.remove('active'));el.classList.add('active');el.style.zIndex=++topZ;renderTasks()}
 function openWindow(name){const el=win(name);if(!el)return;el.hidden=false;delete el.dataset.minimized;focusWindow(el);startMenu.hidden=true;if(name==='mail'){markMailRead();renderMail()}}
@@ -32,3 +32,26 @@ function textNode(tag,text){const el=document.createElement(tag);el.textContent=
 function renderStream(){const s=content.nextStream; $('nextTime').textContent=s.time||'--:--';$('nextTitle').textContent=s.title||'次回未定';$('nextDesc').textContent=s.description||'';$('nextDate').textContent=s.date||'';const list=$('scheduleList');list.replaceChildren();const a=document.createElement('article');const t=textNode('time',s.date||'未定');const tm=textNode('strong',s.time||'--:--');const div=document.createElement('div');div.append(textNode('h2',s.title||'次回未定'),textNode('p',s.description));a.append(t,tm,div);list.append(a)}
 function renderLinks(){for(const [id,url] of [['tiktokLink',content.links.tiktok],['xLink',content.links.x]]){const a=$(id);a.href=/^https:\/\//.test(url||'')?url:'#'}}
 renderStream();renderLinks();
+
+
+// v5 calendar: nextStream is always supported; optional schedule entries can be added later.
+const calendarGrid=document.getElementById('calendarGrid');
+const calendarMonth=document.getElementById('calendarMonth');
+let calendarCursor=new Date();calendarCursor.setDate(1);
+let calendarSelected=new Date();
+function localDateKey(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function allStreams(){const list=Array.isArray(content.schedule)?content.schedule.slice():[];const next=content.nextStream;if(next?.date&&next?.title&&!list.some(x=>x.date===next.date&&x.time===next.time&&x.title===next.title))list.push(next);return list.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')).sort((a,b)=>(a.date+' '+(a.time||'')).localeCompare(b.date+' '+(b.time||'')))}
+function selectCalendarDay(key){const [y,m,d]=key.split('-').map(Number);calendarSelected=new Date(y,m-1,d);renderCalendar()}
+function renderCalendar(){const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth(),today=localDateKey(new Date()),selected=localDateKey(calendarSelected),streams=allStreams();calendarMonth.textContent=`${y}年 ${m+1}月`;calendarGrid.replaceChildren();const first=new Date(y,m,1);const offset=first.getDay();const count=new Date(y,m+1,0).getDate();const cells=Math.ceil((offset+count)/7)*7;for(let i=0;i<cells;i++){const d=new Date(y,m,1-offset+i),key=localDateKey(d),b=document.createElement('button');b.className='calendar-day'+(d.getMonth()!==m?' outside':'')+(key===today?' today':'')+(key===selected?' selected':'')+(streams.some(s=>s.date===key)?' has-stream':'');b.textContent=d.getDate();b.setAttribute('aria-label',key+(streams.some(s=>s.date===key)?' 配信あり':''));b.onclick=()=>{if(d.getMonth()!==calendarCursor.getMonth()){calendarCursor=new Date(d.getFullYear(),d.getMonth(),1)}selectCalendarDay(key)};calendarGrid.appendChild(b)}document.getElementById('selectedDayHeading').textContent=`${calendarSelected.getMonth()+1}月${calendarSelected.getDate()}日 の配信`;const list=document.getElementById('scheduleList');list.replaceChildren();const entries=streams.filter(s=>s.date===selected);if(!entries.length){const p=document.createElement('p');p.className='schedule-empty';p.textContent='この日の予定はまだありません。';list.appendChild(p)}entries.forEach(s=>{const a=document.createElement('article'),t=document.createElement('time'),div=document.createElement('div'),h=document.createElement('h2'),p=document.createElement('p');t.textContent=s.time||'未定';h.textContent=s.title||'配信';p.textContent=s.description||'';div.append(h,p);a.append(t,div);list.appendChild(a)})}
+document.getElementById('prevMonth').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar()};document.getElementById('todayMonth').onclick=()=>{calendarCursor=new Date();calendarCursor.setDate(1);calendarSelected=new Date();renderCalendar()};
+const previousOpenWindow=openWindow;openWindow=function(name){if(name==='schedule'){const s=content.nextStream;const parts=(s?.date||'').split('-').map(Number);if(parts.length===3&&parts.every(Number.isFinite)){calendarCursor=new Date(parts[0],parts[1]-1,1);calendarSelected=new Date(parts[0],parts[1]-1,parts[2])}renderCalendar()}previousOpenWindow(name)};
+document.querySelector('.schedule-gadget').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openWindow('schedule')}});
+renderCalendar();
+
+// v6: SNS desktop shortcuts. Open the service in a new tab and leave a QR shortcut window on the BAKU OS desktop.
+const socialProfiles={
+  tiktok:{name:'TikTok',handle:'@mitemite_siroiinu',url:'https://www.tiktok.com/@mitemite_siroiinu?_r=1&_t=ZS-9A6LfCwRZhs',qr:'assets/tiktok-qr.png'},
+  x:{name:'X',handle:'@mitemite_baku',url:'https://x.com/mitemite_baku?s=11',qr:'assets/x-qr.png'}
+};
+function showSocialShortcut(key){const s=socialProfiles[key];if(!s)return;document.getElementById('socialWindowTitle').textContent='🌐 '+s.name+' Shortcut';document.getElementById('socialName').textContent=s.name;document.getElementById('socialHandle').textContent=s.handle;document.getElementById('socialQr').src=s.qr;document.getElementById('socialQr').alt=s.name+' QRコード';const a=document.getElementById('socialOpenLink');a.href=s.url;a.textContent=s.name+'を開く ↗';openWindow('social')}
+document.querySelectorAll('.social-launch').forEach(a=>a.addEventListener('click',()=>{showSocialShortcut(a.dataset.social)}));

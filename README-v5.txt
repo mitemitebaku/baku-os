@@ -1,0 +1,1 @@
+BAKU OS v5: 4つの公開用ファイル(index.html/style.css/script.js/content.js)をGitHubリポジトリ直下で更新してください。管理者用EDIT.htmlはアップロードしないでください。content.jsは既存の内容を残したい場合、現在公開中のものを使ってください。カレンダーはnextStreamを表示し、将来content.jsにschedule:[{date:"2026-10-01",time:"21:00",title:"...",description:"..."}]を追加すると複数予定を表示できます。
