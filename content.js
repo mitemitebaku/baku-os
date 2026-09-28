@@ -1,10 +1,36 @@
-// このファイルを差し替えると公開サイトの内容が更新されます。
+// BAKU OS 公開コンテンツ。EDIT.htmlは公開しないでください。
 window.BAKU_CONTENT = {
-  nextStream: { date: "2026-09-28", time: "21:00", title: "参加型企画", description: "コメントから参加できます。" },
-  links: { tiktok: "https://www.tiktok.com/@mitemite_siroiinu?_r=1&_t=ZS-9A6LfCwRZhs", x: "https://x.com/mitemite_baku?s=11" },
-  mails: [
-    { id: "20260928", date: "2026.09.28", subject: "BAKU OSへようこそ", body: "ばくからのお知らせをここに書きます。\n更新ツールから追加してね。" },
-    { id: "20260925", date: "2026.09.25", subject: "テストメール", body: "過去のお知らせも受信トレイに残ります。" }
+  "nextStream": {
+    "date": "2026-09-29",
+    "time": "07:30",
+    "title": "あさからばくばく☀",
+    "description": "朝の定期ニュース配信！"
+  },
+  "links": {
+    "tiktok": "https://www.tiktok.com/@mitemite_siroiinu?_r=1&_t=ZS-9A6LfCwRZhs",
+    "x": "https://x.com/mitemite_baku?s=11"
+  },
+  "mails": [
+    {
+      "id": "1790587903516",
+      "date": "2026.9.28",
+      "subject": "はじめまして！",
+      "body": "はじめまして！\nみんなの悪夢をばくばくばっくん　あくむをたべちゃう　ばくだよ～;D\n\nみんなと　おはなしできるの　たのしみにしてるネっ"
+    }
   ],
-  diary: []
+  "diary": [],
+  "schedule": [
+    {
+      "date": "2026-09-28",
+      "time": "07:30",
+      "title": "あさからばくばく☀",
+      "description": "朝の定期ニュース配信！"
+    },
+    {
+      "date": "2026-09-29",
+      "time": "07:30",
+      "title": "あさからばくばく☀",
+      "description": "朝の定期ニュース配信！"
+    }
+  ]
 };
