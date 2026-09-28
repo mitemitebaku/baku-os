@@ -44,7 +44,7 @@ setTimeout(()=>document.getElementById('boot').classList.add('hide'),1600);rende
 // Public website: read-only content rendering. EDIT.exe is not shipped on GitHub Pages.
 const $=id=>document.getElementById(id);
 function textNode(tag,text){const el=document.createElement(tag);el.textContent=text||'';return el}
-function renderStream(){const s=content.nextStream; $('nextTime').textContent=s.time||'--:--';$('nextTitle').textContent=s.title||'次回未定';$('nextDesc').textContent=s.description||'';$('nextDate').textContent=s.date||'';const list=$('scheduleList');list.replaceChildren();const a=document.createElement('article');const t=textNode('time',s.date||'未定');const tm=textNode('strong',s.time||'--:--');const div=document.createElement('div');div.append(textNode('h2',s.title||'次回未定'),textNode('p',s.description));a.append(t,tm,div);list.append(a)}
+function renderStream(){const s=getNextStream(); $('nextTime').textContent=s.time||'--:--';$('nextTitle').textContent=s.title||'次回未定';$('nextDesc').textContent=s.description||'';$('nextDate').textContent=s.date||'';const list=$('scheduleList');list.replaceChildren();const a=document.createElement('article');const t=textNode('time',s.date||'未定');const tm=textNode('strong',s.time||'--:--');const div=document.createElement('div');div.append(textNode('h2',s.title||'次回未定'),textNode('p',s.description));a.append(t,tm,div);list.append(a)}
 function renderLinks(){}
 renderStream();renderLinks();
 
@@ -55,7 +55,8 @@ const calendarMonth=document.getElementById('calendarMonth');
 let calendarCursor=new Date();calendarCursor.setDate(1);
 let calendarSelected=new Date();
 function localDateKey(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
-function allStreams(){const list=Array.isArray(content.schedule)?content.schedule.slice():[];const next=content.nextStream;if(next?.date&&next?.title&&!list.some(x=>x.date===next.date&&x.time===next.time&&x.title===next.title))list.push(next);return list.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')).sort((a,b)=>(a.date+' '+(a.time||'')).localeCompare(b.date+' '+(b.time||'')))}
+function allStreams(){const list=Array.isArray(content.schedule)?content.schedule.slice():[content.nextStream];return list.filter(x=>x&&/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')).sort((a,b)=>(a.date+' '+(a.time||'')).localeCompare(b.date+' '+(b.time||'')))}
+function getNextStream(){const now=new Date();return allStreams().map(s=>({...s,when:new Date(`${s.date}T${s.time||'23:59'}:00`)})).filter(s=>!Number.isNaN(s.when.getTime())&&s.when>=now).sort((a,b)=>a.when-b.when)[0]||{date:'',time:'',title:'次回未定',description:'配信予定を確認中'};}
 function selectCalendarDay(key){const [y,m,d]=key.split('-').map(Number);calendarSelected=new Date(y,m-1,d);renderCalendar()}
 function renderCalendar(){
  const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth(),today=localDateKey(new Date()),selected=localDateKey(calendarSelected),streams=allStreams();
@@ -75,9 +76,9 @@ function renderCalendar(){
  entries.forEach(s=>{const a=document.createElement('article'),t=document.createElement('time'),div=document.createElement('div'),h=document.createElement('h2'),p=document.createElement('p');t.textContent=s.time||'未定';h.textContent=s.title||'配信';p.textContent=s.description||'';div.append(h,p);a.append(t,div);list.appendChild(a)})
 }
 document.getElementById('prevMonth').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar()};document.getElementById('todayMonth').onclick=()=>{calendarCursor=new Date();calendarCursor.setDate(1);calendarSelected=new Date();renderCalendar()};
-const previousOpenWindow=openWindow;openWindow=function(name){if(name==='schedule'){const s=content.nextStream;const parts=(s?.date||'').split('-').map(Number);if(parts.length===3&&parts.every(Number.isFinite)){calendarCursor=new Date(parts[0],parts[1]-1,1);calendarSelected=new Date(parts[0],parts[1]-1,parts[2])}renderCalendar()}previousOpenWindow(name)};
+const previousOpenWindow=openWindow;openWindow=function(name){if(name==='schedule'){const s=getNextStream();const parts=(s?.date||'').split('-').map(Number);if(parts.length===3&&parts.every(Number.isFinite)){calendarCursor=new Date(parts[0],parts[1]-1,1);calendarSelected=new Date(parts[0],parts[1]-1,parts[2])}renderCalendar()}previousOpenWindow(name)};
 document.querySelector('.schedule-gadget').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openWindow('schedule')}});
-renderCalendar();
+renderCalendar();setInterval(()=>{renderStream();if(!win('schedule').hidden)renderCalendar()},60000);
 
 // v7: SNS desktop shortcuts open a QR window first. The external site opens only from the button inside it.
 const socialProfiles={
