@@ -170,3 +170,18 @@ body,button,input,textarea{font-family:"MS Gothic","Osaka-Mono","Courier New",mo
 @media(min-width:801px){.icons{grid-template-rows:repeat(6,108px)!important}.icons > .desktop-icon:nth-child(4){grid-column:1!important;grid-row:4!important}.icons > .desktop-icon:nth-child(5){grid-column:1!important;grid-row:5!important}.icons > #secretIcon{grid-column:1!important;grid-row:6!important}.stream-gadget{top:160px!important}.stream-folder-window{min-width:650px}}
 @media(max-width:800px){.stream-gadget{display:block!important;position:absolute!important;top:160px!important;right:10px!important;left:auto!important;width:min(190px,49vw)!important;padding:8px!important}.stream-gadget .gadget-title{font-size:12px}.sns-gadget-links{gap:2px}.sns-gadget-links button{padding:3px;font-size:12px}.sns-gadget-links img{width:40px;height:40px}.icons{grid-auto-rows:76px!important}.icons > .desktop-icon:nth-child(4){grid-column:1!important;grid-row:4!important}.icons > .desktop-icon:nth-child(5){grid-column:1!important;grid-row:5!important}.icons > #secretIcon{grid-column:1!important;grid-row:6!important}.stream-folder-layout{grid-template-columns:1fr;gap:10px}.stream-folder-nav{max-height:200px}.stream-photo{height:150px}.mystery-files button{min-width:90px;flex:1;font-size:22px}.mystery-files button span{font-size:12px}.mystery-window{top:9vh!important;max-height:78vh!important}}
 @media(max-height:690px) and (min-width:801px){.icons{grid-template-rows:repeat(6,82px)!important}.icons > .desktop-icon{height:78px!important;min-height:78px!important}.icons .folder-icon{height:30px}.icons .mail-icon,.icons .trash-icon,.icons .media-icon,.icons .browser-icon{height:35px;font-size:32px}.icons .desktop-icon b{font-size:14px}}
+
+/* v11: mobile page can scroll all the way to the bottom. Desktop layout unchanged. */
+@media (max-width:800px){
+  html{height:auto!important;min-height:100%;overflow-x:hidden!important;overflow-y:auto!important;}
+  body{height:auto!important;min-height:100dvh!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding-bottom:52px;}
+  .desktop{position:relative!important;inset:auto!important;width:100%!important;min-height:max(920px,calc(100dvh - 52px))!important;height:auto!important;overflow:visible!important;}
+  .desktop:before,.wallpaper-noise{pointer-events:none;}
+  .icons{max-height:none!important;overflow:visible!important;}
+  .gadgets{position:absolute!important;inset:0!important;pointer-events:none!important;}
+  .gadgets .gadget{pointer-events:auto!important;}
+  .schedule-gadget{bottom:26px!important;}
+  .taskbar{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:100!important;}
+  .window{max-height:min(75dvh,700px)!important;}
+  .window-body{overflow-y:auto!important;overscroll-behavior:contain;}
+}
