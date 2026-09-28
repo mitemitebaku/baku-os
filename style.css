@@ -185,3 +185,54 @@ body,button,input,textarea{font-family:"MS Gothic","Osaka-Mono","Courier New",mo
   .window{max-height:min(75dvh,700px)!important;}
   .window-body{overflow-y:auto!important;overscroll-behavior:contain;}
 }
+
+/* v12: mobile modal + stream folder fixes */
+@media (max-width:800px){
+  /* SNS shortcut dialog must be centered in the PHONE VIEWPORT, not in the tall desktop canvas. */
+  .window.social-window{
+    position:fixed!important;
+    left:50%!important;
+    right:auto!important;
+    top:50%!important;
+    bottom:auto!important;
+    transform:translate(-50%,-50%)!important;
+    width:calc(100vw - 24px)!important;
+    max-width:430px!important;
+    max-height:calc(100dvh - 92px)!important;
+    margin:0!important;
+    z-index:260!important;
+    overflow:hidden!important;
+  }
+  .social-window .window-body{max-height:calc(100dvh - 145px)!important;overflow-y:auto!important;overflow-x:hidden!important;}
+  .social-qr-body{box-sizing:border-box!important;width:100%!important;}
+  .social-qr{width:min(46vw,170px)!important;height:min(46vw,170px)!important;flex:0 0 auto!important;}
+
+  /* Do not crop the stream list after GAME. The entire folder scrolls naturally. */
+  .window.stream-folder-window{
+    position:fixed!important;
+    left:12px!important;
+    right:12px!important;
+    top:54px!important;
+    bottom:64px!important;
+    transform:none!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    z-index:240!important;
+    overflow:hidden!important;
+  }
+  .stream-folder-window .window-body{
+    height:calc(100% - 48px)!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
+  }
+  .stream-folder-layout{display:block!important;min-height:0!important;}
+  .stream-folder-nav{max-height:none!important;height:auto!important;overflow:visible!important;margin-bottom:12px!important;}
+  .stream-folder-nav button{min-height:42px!important;}
+  .stream-detail{display:block!important;min-height:0!important;}
+  .stream-photo{height:160px!important;}
+}
