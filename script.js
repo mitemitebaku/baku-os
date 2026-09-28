@@ -39,8 +39,8 @@ function renderStreamFolder(){
 }
 renderStreamFolder();
 const audio=document.getElementById('bakuAudio'),tracks=[{name:'あさからばくばくOP.mp3',src:'assets/あさからばくばくOP.mp3'},{name:'朝占いの風.mp3',src:'assets/朝占いの風.mp3'}];
-document.querySelectorAll('[data-track]').forEach(b=>b.addEventListener('click',()=>{const track=tracks[Number(b.dataset.track)];audio.pause();audio.src=track.src;audio.load();document.getElementById('nowPlaying').textContent=track.name;document.getElementById('audioHint').textContent='▶ で再生。音源がまだなければ assets に追加してね。';document.querySelectorAll('[data-track]').forEach(x=>x.classList.toggle('active',x===b))}));
-audio.addEventListener('error',()=>{document.getElementById('audioHint').textContent='音源が見つかりません。assets フォルダに同じ名前のMP3を入れてね。'});
+document.querySelectorAll('[data-track]').forEach(b=>b.addEventListener('click',()=>{const track=tracks[Number(b.dataset.track)];audio.pause();audio.src=track.src;audio.load();document.getElementById('nowPlaying').textContent=track.name;document.querySelectorAll('[data-track]').forEach(x=>x.classList.toggle('active',x===b))}));
+
 const content=structuredClone(window.BAKU_CONTENT||{mails:[],diary:[]});content.mails ||= [];content.diary ||= [];
 const chapterMail={id:'chapter1_hello',date:'DATE UNKNOWN',subject:'まだ起きてる？',body:'こんばんは。\n\nばくが眠っちゃったみたい。\nいつもはみんなの悪い夢を食べてるんだけど、今日はちょっと食べすぎたんだって。\n\nだから、お願い。\nばくが起きるまで、このパソコンを閉じないで。\n\n……あと、もし知らないフォルダを見つけても、開かないでね。'};
 if(!content.mails.some(m=>m.id===chapterMail.id))content.mails.unshift(chapterMail);content.nextStream ||= {};content.links ||= {};
