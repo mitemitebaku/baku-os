@@ -74,7 +74,7 @@ function localDateKey(d){return [d.getFullYear(),String(d.getMonth()+1).padStart
 function allStreams(){const list=Array.isArray(content.schedule)?content.schedule.slice():[];const next=content.nextStream;if(next?.date&&next?.title&&!list.some(x=>x.date===next.date&&x.time===next.time&&x.title===next.title))list.push(next);return list.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')).sort((a,b)=>(a.date+' '+(a.time||'')).localeCompare(b.date+' '+(b.time||'')))}
 function selectCalendarDay(key){const [y,m,d]=key.split('-').map(Number);calendarSelected=new Date(y,m-1,d);renderCalendar()}
 function renderCalendar(){
- const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth(),today=localDateKey(new Date()),selected=localDateKey(calendarSelected),streams=allStreams();
+ const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth(),today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date()),selected=localDateKey(calendarSelected),streams=allStreams();
  calendarMonth.textContent=`${y}年 ${m+1}月`;calendarGrid.replaceChildren();
  const first=new Date(y,m,1),offset=first.getDay(),count=new Date(y,m+1,0).getDate(),cells=Math.ceil((offset+count)/7)*7;
  for(let i=0;i<cells;i++){
