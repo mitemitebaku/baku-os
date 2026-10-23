@@ -3,6 +3,7 @@
   'use strict';
   const KEY = 'bakuChapter2:v1';
   const MAIL_ID = 'chapter2_prescription';
+  const chapter1Complete = () => {try {return localStorage.getItem('bakuChapter1Solved') === 'yes';} catch {return false;}};
   const app = document.getElementById('c2App');
   const medical = document.querySelector('[data-window="medical"]');
   const fresh = () => ({version:1,started:false,q1:false,q2:false,mixed:false,complete:false,logs:[],recipe:[],view:'home'});
@@ -61,6 +62,7 @@
   function feedback(message) {const el=document.getElementById('c2Feedback');if(el)el.textContent=message;}
   function focusHeading() {if(!medical.hidden)focusWindow(medical);app.querySelector('h2')?.focus({preventScroll:true});app.scrollTop=0;}
   function nav(view) {
+    if(!chapter1Complete()){render();focusHeading();return;}
     if(view==='lab' && !state.q2) return;
     if(view==='analysis' && !state.q1) return;
     if(view==='ending' && !state.complete) return;
@@ -77,6 +79,10 @@
       ${body}<p id="c2Feedback" class="c2-feedback" role="status" aria-live="polite"></p>`;
   }
   function render() {
+    if(!chapter1Complete()) {
+      app.innerHTML='<header class="c2-header"><p>CHAPTER 02 : DREAM PRESCRIPTION</p><h1>ゆめの処方箋</h1></header><section><h2 tabindex="-1">ACCESS LOCKED</h2><p>第2章は、第1章をクリアすると遊べます。</p><p>デスクトップの「???」から第1章を進めてください。</p><button type="button" data-c2="chapter1">第1章を開く</button></section>';
+      return;
+    }
     const view=state.view;
     let body='';
     if(view==='home') body=`<section class="c2-home"><h2 tabindex="-1">DREAM MEDICAL SYSTEM</h2><p class="c2-terminal">PATIENT : BAKU<br>STATUS : ${state.complete?'RECOVERED':'SLEEPING'}<br>CAUSE : CORRUPTED DREAM</p><p>最後に食べた4つの夢の中に、壊れた記録がひとつ。<br>夢を調べ、異常を特定して、お薬を調合してください。</p><div class="c2-actions">${button('continue',state.complete?'診療記録を読む':'診断をはじめる / 続きから')}${button('lab','MEDICINE LAB',state.q2?'':'disabled')}</div>${!state.q2?'<small>MEDICINE LABは夢の異常を解析すると使用できます。</small>':''}<details class="c2-replay"><summary>最初から遊び直す</summary><p>第2章の進行だけをリセットします。第1章の記録は残ります。</p>${button('restart','第2章をリセットして開始')}</details></section>`;
@@ -128,6 +134,11 @@
     later(()=>{state.complete=true;nav('ending');},reduced?250:4400);
   }
   app.addEventListener('click',e=>{
+    if(!chapter1Complete()) {
+      if(e.target.closest('[data-c2]')?.dataset.c2==='chapter1'){closeWindow(medical);openWindow('secret');}
+      else render();
+      return;
+    }
     const dream=e.target.closest('[data-dream]');if(dream){playDream(dream.dataset.dream);return;}
     const log=e.target.closest('[data-log]');
     if(log){const n=Number(log.dataset.log);if(state.logs.includes(n))state.logs=state.logs.filter(x=>x!==n);else if(state.logs.length<3)state.logs.push(n);else {feedback('選べるログは3つまでです。選択済みのログを解除してください。');return;}save();log.setAttribute('aria-pressed',String(state.logs.includes(n)));document.getElementById('c2LogCount').textContent=`${state.logs.length} / 3 選択`;feedback('');return;}
@@ -160,6 +171,7 @@
   });
   // Pointer capture supports mouse, touch and pen; tapping is also fully keyboard accessible.
   app.addEventListener('pointerdown',e=>{
+    if(!chapter1Complete())return;
     const source=e.target.closest('[data-medicine]');if(!source||source.disabled||e.button!==0||drag)return;
     drag={id:e.pointerId,color:source.dataset.medicine,x:e.clientX,y:e.clientY,source,moved:false};
     source.setPointerCapture(e.pointerId);
@@ -189,8 +201,23 @@
   document.addEventListener('baku:mail-rendered',e=>{
     if(e.detail?.id!==MAIL_ID)return;
     const launch=document.createElement('button');launch.type='button';launch.className='c2-mail-launch';launch.textContent='DREAM MEDICAL SYSTEM を起動';
-    launch.onclick=()=>{state.started=true;save();render();minimizeWindow(win('mail'));openWindow('medical');focusHeading();};
-    document.getElementById('mailBody').append(launch);
+    launch.disabled=!chapter1Complete();
+    launch.onclick=()=>{if(!chapter1Complete()){renderMail();return;}state.started=true;save();render();minimizeWindow(win('mail'));openWindow('medical');focusHeading();};
+    const body=document.getElementById('mailBody');
+    body.append(launch);
+    if(!chapter1Complete()) {
+      const notice=document.createElement('p');notice.className='c2-unlock-notice';notice.textContent='第1章をクリアすると、第2章を起動できます。';
+      const first=document.createElement('button');first.type='button';first.className='c2-mail-launch';first.textContent='第1章を開く';first.onclick=()=>openWindow('secret');
+      body.append(notice,first);
+    }
   });
+  function refreshGate() {
+    if(!chapter1Complete()){stopAudio();cancelDrag();clearTimers();}
+    renderMail();
+    if(!medical.hidden)render();
+  }
+  // The existing Chapter 1 submit handler runs first and writes its completion flag.
+  document.getElementById('mysteryPasswordForm').addEventListener('submit',refreshGate);
+  window.addEventListener('storage',e=>{if(e.key==='bakuChapter1Solved'||e.key===null)refreshGate();});
   render();
 })();
