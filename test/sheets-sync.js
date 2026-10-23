@@ -62,6 +62,7 @@
       body.append(small,h,p);
     }
     mailStatus();
+    document.dispatchEvent(new CustomEvent('baku:mail-rendered', {detail:{id:current?.id}}));
   };
   // Disable the original latest-message-only notification timer.
   latest = null;
