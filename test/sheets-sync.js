@@ -49,12 +49,25 @@
       read.add(String(current.id)); safeSet(readKey, JSON.stringify([...read]));
     }
     const list = document.getElementById('mailList'); list.replaceChildren();
-    content.mails.forEach((m,i) => {
-      const b = document.createElement('button'); b.className = 'mail-item' + (m.id === selectedId ? ' active' : '');
-      const strong = document.createElement('b'), small = document.createElement('small');
-      strong.textContent = (read.has(String(m.id)) ? '' : '● ') + m.subject; small.textContent = m.date;
-      b.append(strong,small); b.onclick = () => renderMail(i); list.append(b);
-    });
+    const groups = [
+      {label:'お知らせ', story:false, empty:'お知らせはありません。'},
+      {label:'謎解きメール', story:true, empty:'謎解きメールはありません。'}
+    ];
+    for(const group of groups) {
+      const frame=document.createElement('fieldset'), legend=document.createElement('legend');
+      frame.className='mail-group';legend.textContent=group.label;frame.append(legend);
+      let count=0;
+      content.mails.forEach((m,i) => {
+        if(String(m.id).startsWith('chapter')!==group.story)return;
+        count++;
+        const b = document.createElement('button'); b.className = 'mail-item' + (m.id === selectedId ? ' active' : '');
+        const strong = document.createElement('b'), small = document.createElement('small');
+        strong.textContent = (read.has(String(m.id)) ? '' : '● ') + m.subject; small.textContent = m.date;
+        b.append(strong,small); b.onclick = () => renderMail(i); frame.append(b);
+      });
+      if(!count){const p=document.createElement('p');p.className='mail-group-empty';p.textContent=group.empty;frame.append(p);}
+      list.append(frame);
+    }
     const body = document.getElementById('mailBody'); body.replaceChildren();
     if (current) {
       const small = document.createElement('small'), h = document.createElement('h1'), p = document.createElement('p');

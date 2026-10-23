@@ -117,3 +117,31 @@
 @media(max-width:800px){.c2-workbench {grid-template-columns:minmax(0,1fr) 110px;gap:9px}.c2-workbench .c2-medicines {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.chapter2-body .c2-workbench .c2-mixing-bottle {width:110px;padding:12px 6px;min-height:174px}.c2-workbench .c2-medicine {padding:7px 1px;gap:3px}.c2-workbench .c2-bottle {width:36px;height:43px}.c2-workbench .c2-medicine small {font-size:9px}}
 .c2-mail-launch:disabled {opacity:.5;cursor:default!important}
 .c2-unlock-notice {font-size:13px;color:#64717b}
+/* Two inbox compartments keep public announcements and story mail distinct. */
+.mail-layout .mail-group {min-inline-size:0;min-width:0;margin:0 0 14px;padding:5px 7px 8px;border:2px groove #f8fbff;background:#e8edf5}
+.mail-group legend {padding:0 5px;color:#2d496b;font-weight:bold;font-size:13px}
+.mail-group .mail-item {overflow-wrap:anywhere;white-space:normal}
+.mail-group-empty {font-size:12px;color:#64738c;line-height:1.6;margin:8px 2px}
+/* Local, dismissible failure dialogs. No screen-wide flashing or loud sounds. */
+.c2-error-shade {position:fixed;inset:0;z-index:10002;background:#14263855;display:grid;place-items:center;padding:16px;overscroll-behavior:contain}
+.c2-error-dialog {width:min(430px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#e3e9ec;border:2px outset #fff;box-shadow:5px 6px #14263888;color:#263c51;font:14px/1.7 "MS UI Gothic","MS PGothic",Tahoma,sans-serif}
+.c2-error-dialog .titlebar {position:sticky;top:0;cursor:default!important;background:linear-gradient(90deg,#4b536f,#8590ac);font-size:12px;gap:8px;height:auto;min-height:36px}
+.c2-error-dialog .titlebar button {border:2px outset #fff;background:#d6dfec;color:#263c51;font-size:17px;min-width:30px;min-height:28px;padding:0}
+.c2-error-body {display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:20px 18px 10px}
+.c2-error-icon {display:grid;place-items:center;align-self:start;width:40px;height:40px;background:#e7d79d;border:2px outset #fff;font:bold 30px/1 monospace}
+.c2-error-body b {font-size:15px}.c2-error-body p {margin:8px 0;overflow-wrap:anywhere}.c2-error-body small {font:10px/1.8 monospace;color:#69768a}
+.c2-error-actions {display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:12px 18px 18px}
+.c2-error-actions button {min-height:40px;min-width:84px;padding:7px 12px;border:2px outset #fff;background:#d7e0e9;color:#263c51;font:14px "MS UI Gothic",Tahoma,sans-serif}
+.c2-error-dialog button:focus-visible {outline:2px dotted #325678;outline-offset:2px}
+.c2-error-signal {background:#243c48;color:#c2d8d4;padding:5px 9px;font:18px/1.4 monospace;animation:c2-error-signal 1.5s steps(3,end) 2;margin-top:8px}
+.c2-error-stamp {margin:10px 0 2px;width:max-content;color:#925966;border:2px double #925966;padding:2px 10px;font:bold 15px monospace;transform:rotate(-4deg)}
+.chapter2-window[data-mixing-failure="reaction"] .c2-mixture {animation:c2-shake .4s steps(3,end) 3}
+.chapter2-window[data-mixing-failure="signal"] .c2-mixture i {animation:c2-error-signal 1.5s steps(3,end) 2}
+.chapter2-window[data-mixing-failure="rejected"] .c2-mixture {outline:2px dashed #976b78}
+@keyframes c2-error-signal {50%{opacity:.45}}
+@media(max-width:800px){.mail-layout .mail-group {padding:4px;margin-bottom:11px}.mail-group legend {font-size:12px;padding:0 3px}.mail-group .mail-item {font-size:12px}.c2-error-body {padding:16px 12px 8px;gap:10px}.c2-error-actions {padding:10px 12px 14px}}
+@media(prefers-reduced-motion:reduce){.c2-error-shade *,.chapter2-window[data-mixing-failure] .c2-mixture,.chapter2-window[data-mixing-failure] .c2-mixture i {animation:none!important}}
+
+.c2-input-guide {border:1px solid #95a8ad;background:#f3f5ee;padding:8px 10px;margin:12px 0;font-size:12px;line-height:1.7}
+.c2-input-guide p {margin:3px 0}.c2-input-guide b {display:inline-block;min-width:52px;margin-right:7px;color:#34556b}
+@media(max-width:800px){.c2-input-guide {font-size:11px;padding:7px 8px}.c2-input-guide b {min-width:42px;margin-right:4px}}

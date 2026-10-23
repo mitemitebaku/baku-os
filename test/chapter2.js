@@ -38,6 +38,12 @@
   let chosen = null, audio = null, audioRequest = 0, drag = null, suppressClick=false;
   let timers = [];
   let recoveryRunning = false;
+  let failureBag=[],failureOverlay=null,failureFocus=null;
+  const mixingFailures=[
+    {title:'REAGENT CONFLICT',code:'RX_01 / REACTION UNSTABLE',icon:'!',effect:'reaction',body:'薬がうまく混ざりません。夢の中で異常が起きた順番と、薬の効果を確認してください。'},
+    {title:'DREAM SIGNAL LOST',code:'RX_02 / SIGNAL INTERRUPTED',icon:'⌁',effect:'signal',body:'夢との接続が不安定になりました。この処方では、ばくにお薬を届けられません。調合瓶を空にして、もう一度試してください。'},
+    {title:'PRESCRIPTION REJECTED',code:'RX_03 / INVALID PRESCRIPTION',icon:'×',effect:'rejected',body:'この処方箋は受理されませんでした。夢の記録と照合して、必要な薬を選び直してください。'}
+  ];
   const assets = window.BAKU_CHAPTER2_ASSETS || {};
   const imagePath = d => assets[d.id]?.image || `assets/chapter2/dream_${d.id}.svg`;
   const audioPath = d => assets[d.id]?.audio || `assets/chapter2/dream_${d.id}.mp3`;
@@ -48,7 +54,7 @@
     if(warning) warning.hidden=storageAvailable;
   }
   function later(fn,ms) {timers.push(setTimeout(fn,ms));}
-  function clearTimers(){timers.forEach(clearTimeout);timers=[];recoveryRunning=false;}
+  function clearTimers(){timers.forEach(clearTimeout);timers=[];recoveryRunning=false;closeFailure(false,false);}
   function stopAudio() {
     audioRequest++;
     if(audio){audio.pause();audio.removeAttribute('src');audio.load();audio=null;}
@@ -79,6 +85,7 @@
       ${body}<p id="c2Feedback" class="c2-feedback" role="status" aria-live="polite"></p>`;
   }
   function render() {
+    closeFailure(false,false);
     if(!chapter1Complete()) {
       app.innerHTML='<header class="c2-header"><p>CHAPTER 02 : DREAM PRESCRIPTION</p><h1>ゆめの処方箋</h1></header><section><h2 tabindex="-1">ACCESS LOCKED</h2><p>第2章は、第1章をクリアすると遊べます。</p><p>デスクトップの「???」から第1章を進めてください。</p><button type="button" data-c2="chapter1">第1章を開く</button></section>';
       return;
@@ -88,9 +95,9 @@
     if(view==='home') body=`<section class="c2-home"><h2 tabindex="-1">DREAM MEDICAL SYSTEM</h2><p class="c2-terminal">PATIENT : BAKU<br>STATUS : ${state.complete?'RECOVERED':'SLEEPING'}<br>CAUSE : CORRUPTED DREAM</p><p>最後に食べた4つの夢の中に、壊れた記録がひとつ。<br>夢を調べ、異常を特定して、お薬を調合してください。</p><div class="c2-actions">${button('continue',state.complete?'診療記録を読む':'診断をはじめる / 続きから')}${button('lab','MEDICINE LAB',state.q2?'':'disabled')}</div>${!state.q2?'<small>MEDICINE LABは夢の異常を解析すると使用できます。</small>':''}<details class="c2-replay"><summary>最初から遊び直す</summary><p>第2章の進行だけをリセットします。第1章の記録は残ります。</p>${button('restart','第2章をリセットして開始')}</details></section>`;
     if(view==='records') body=`<section><h2 tabindex="-1">DREAM RECORDS</h2><p class="c2-rule">4つの証言のうち、嘘は1つだけです。<br><b>壊れた夢の証言だけが嘘です。</b> バグ夢を特定してください。</p><div class="c2-dream-grid">${dreams.map(d=>`<article class="c2-dream"><button type="button" data-dream="${d.id}" class="c2-dream-play" aria-label="${d.id.toUpperCase()}：${d.name}の音声を再生" aria-pressed="false"><span class="c2-image"><img data-c2-image="${d.id}" alt="" width="56" height="56"><span class="c2-image-fallback" hidden>${d.emoji}</span></span><b>${d.id.toUpperCase()}：${d.name}</b><span class="c2-play-label">▶ 再生</span></button><details><summary>証言を文字で読む</summary><p>${d.lines.join('<br>')}</p></details></article>`).join('')}</div><p id="c2AudioStatus" class="c2-audio-status" role="status">音声がなくても「証言を文字で読む」から推理できます。</p><div class="c2-answer"><label for="c2DreamChoice">バグ夢はどれですか？</label><select id="c2DreamChoice"><option value="">選択してください</option>${dreams.map(d=>`<option value="${d.id}">${d.id.toUpperCase()}：${d.name}</option>`).join('')}</select>${button('judge-dream','判定する')}</div></section>`;
     if(view==='analysis') body=`<section><h2 tabindex="-1">DREAM LOG : HOSPITAL</h2><p class="c2-success">DREAM ANALYSIS COMPLETE<br>CORRUPTED DREAM DETECTED<br>FILE : D_HOSPITAL</p><details class="c2-manual"><summary>DREAM ERROR MANUAL</summary><p>以下の現象はバグ夢の兆候です。</p><ul><li>時間の逆行</li><li>本来の色からの異常な変化</li><li>無生物による視線の発生</li></ul></details><p>異常だと思うログを3つ選択してください。もう一度押すと解除できます。</p><div class="c2-logs">${logs.map((line,i)=>`<button type="button" data-log="${i+1}" aria-pressed="${state.logs.includes(i+1)}"><span>${String(i+1).padStart(2,'0')}</span>${line}</button>`).join('')}</div><div class="c2-actions"><span id="c2LogCount">${state.logs.length} / 3 選択</span>${button('judge-logs','解析する')}</div></section>`;
-    if(view==='lab') body=`<section><h2 tabindex="-1">MEDICINE LAB</h2><div class="c2-success">ERROR TYPE DETECTED : TIME / COLOR / GAZE</div><details class="c2-manual"><summary>解析結果を確認</summary><p>02 : 時計が逆回転 → TIME ERROR<br>05 : 白い花が黒い → COLOR ERROR<br>06 : 花がこちらを見る → GAZE ERROR</p></details><p class="c2-rule">薬は、夢の中で異常が発生した順番に投入してください。</p><div class="c2-workbench"><div class="c2-medicines">${colors.map(c=>`<button type="button" class="c2-medicine" data-medicine="${c}" aria-label="${medicineNames[c]}を選ぶ。${effects[c]}" aria-pressed="false" ${state.mixed?'disabled':''}><span class="c2-bottle ${c}" aria-hidden="true"><i></i><em>✚</em></span><b>${medicineNames[c]}</b><small>${effects[c]}</small></button>`).join('')}</div><button type="button" class="c2-mixing-bottle" id="c2Drop" data-c2="pour" aria-label="選んだ薬を調合瓶へ投入" ${state.mixed?'disabled':''}><span class="c2-mixture" aria-hidden="true"><i id="c2Liquid"></i><em>° · ˚</em></span><b>調合瓶</b><small>ここに投入</small></button></div><p id="c2MixHelp" class="c2-mix-help">薬瓶を中央の瓶へドラッグ。薬を選び、調合瓶をタップしても投入できます。</p><p class="c2-history-label">調合履歴</p><ol id="c2Recipe" class="c2-history" aria-live="polite"></ol><div class="c2-actions">${button('reset-mix','リセット')}${button('mix','調合する',state.mixed?'disabled':'')}</div><div id="c2MedicineReady" class="c2-ready" ${state.mixed?'':'hidden'}><p class="c2-success">MEDICINE COMPLETE<br>PRESCRIPTION SUCCESSFUL</p>${button('give','ばくにお薬をあげる')}</div></section>`;
+    if(view==='lab') body=`<section><h2 tabindex="-1">MEDICINE LAB</h2><div class="c2-success">ERROR TYPE DETECTED : TIME / COLOR / GAZE</div><details class="c2-manual"><summary>解析結果を確認</summary><p>02 : 時計が逆回転 → TIME ERROR<br>05 : 白い花が黒い → COLOR ERROR<br>06 : 花がこちらを見る → GAZE ERROR</p></details><p class="c2-rule">薬は、夢の中で異常が発生した順番に投入してください。</p><div class="c2-input-guide"><p><b>PC</b>薬瓶を調合瓶へドラッグ＆ドロップ</p><p><b>スマホ</b>薬瓶をタップ → 調合瓶をタップ</p></div><div class="c2-workbench"><div class="c2-medicines">${colors.map(c=>`<button type="button" class="c2-medicine" data-medicine="${c}" aria-label="${medicineNames[c]}を選ぶ。${effects[c]}" aria-pressed="false" ${state.mixed?'disabled':''}><span class="c2-bottle ${c}" aria-hidden="true"><i></i><em>✚</em></span><b>${medicineNames[c]}</b><small>${effects[c]}</small></button>`).join('')}</div><button type="button" class="c2-mixing-bottle" id="c2Drop" data-c2="pour" aria-label="選んだ薬を調合瓶へ投入" ${state.mixed?'disabled':''}><span class="c2-mixture" aria-hidden="true"><i id="c2Liquid"></i><em>° · ˚</em></span><b>調合瓶</b><small>ここに投入</small></button></div><p id="c2MixHelp" class="c2-mix-help">薬は3つまで投入できます。</p><p class="c2-history-label">調合履歴</p><ol id="c2Recipe" class="c2-history" aria-live="polite"></ol><div class="c2-actions">${button('reset-mix','リセット')}${button('mix','調合する',state.mixed?'disabled':'')}</div><div id="c2MedicineReady" class="c2-ready" ${state.mixed?'':'hidden'}><p class="c2-success">MEDICINE COMPLETE<br>PRESCRIPTION SUCCESSFUL</p>${button('give','ばくにお薬をあげる')}</div></section>`;
     if(view==='recovery') body=`<section class="c2-recovery"><h2 tabindex="-1">PATIENT STATUS</h2><div class="c2-treatment"><div class="c2-dose c2-bottle yellow" aria-label="調合した薬"><i></i><em>✚</em></div><div class="c2-patient"><img id="c2Patient" alt="眠っているばくの仮イラスト" width="128" height="112"><span class="c2-patient-fallback" hidden>☾<br>BAKU / SLEEP MODE</span></div><div class="c2-dim" aria-hidden="true"></div></div><div class="c2-monitor" aria-hidden="true"><span>_／＼＿／|＼＿_／＼＿／|＼＿</span></div><p id="c2RecoveryText" class="c2-terminal" role="status" aria-live="polite">BAKU : SLEEPING<br>MEDICINE : ADMINISTERING...</p></section>`;
-    if(view==='ending') body=`<section class="c2-ending"><h2 tabindex="-1">RECOVERY COMPLETE</h2><p>「ん……」<br>「あれ、また寝ちゃってた？」<br>「なんか変な夢、食べちゃったみたい。」<br>「助けてくれたの？ありがと！」</p><p>「あのね、夢って、どんなに変でもおいしく食べられるんだよ。」<br>「でも、今回のはちょっと違ったみたい。」</p><p>「……だってさ。」</p><p class="c2-reveal"><b>「あの夢、誰も見てなかったんだって。」</b></p><div class="c2-terminal">DREAM RECORD : D<br><br>OWNER : NOT FOUND<br>SOURCE : UNKNOWN<br>CREATED BY : BAKU OS</div><p class="c2-success">[ CHAPTER 02 COMPLETE ]<br>DREAM PRESCRIPTION SUCCESSFUL</p><div class="c2-actions">${button('desktop','デスクトップに戻る')}${button('home','診察室 / 再プレイ')}</div></section>`;
+    if(view==='ending') body=`<section class="c2-ending"><h2 tabindex="-1">RECOVERY COMPLETE</h2><p>ん……<br>あれ、また寝ちゃってた？<br>なんか変な夢、食べちゃったみたい。<br>助けてくれたの？ありがと！</p><p>あのね、夢って、どんなに変でもおいしく食べられるんだよ。<br>でも、今回のはちょっと違ったみたい。</p><p>……だってさ。</p><p class="c2-reveal"><b>あの夢、誰も見てなかったんだって。</b></p><div class="c2-terminal">DREAM RECORD : D<br><br>OWNER : NOT FOUND<br>SOURCE : UNKNOWN<br>CREATED BY : BAKU OS</div><p class="c2-success">[ CHAPTER 02 COMPLETE ]<br>DREAM PRESCRIPTION SUCCESSFUL</p><div class="c2-actions">${button('desktop','デスクトップに戻る')}${button('home','診察室 / 再プレイ')}</div></section>`;
     app.innerHTML=shell(body);
     if(view==='records') for(const d of dreams){const img=app.querySelector(`[data-c2-image="${d.id}"]`);img.onerror=()=>{img.hidden=true;img.nextElementSibling.hidden=false;};img.src=imagePath(d);}
     if(view==='lab') updateLab();
@@ -106,13 +113,45 @@
     const sums=state.recipe.reduce((a,c)=>a.map((n,i)=>n+mix[c][i]),[0,0,0]);
     liquid.style.height=`${count*25}%`;liquid.style.backgroundColor=count?`rgb(${sums.map(n=>Math.round(n/count)).join(',')})`:'transparent';
     app.querySelectorAll('[data-medicine]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.medicine===chosen)));
-    document.getElementById('c2MixHelp').textContent=chosen?`${medicineNames[chosen]}を選択中。調合瓶をタップするか、ドラッグして投入してください。`:'薬瓶を中央の瓶へドラッグ。薬を選び、調合瓶をタップしても投入できます。';
+    document.getElementById('c2MixHelp').textContent=chosen?`選択中：${medicineNames[chosen]}。スマホは調合瓶をタップして投入してください。`:'薬は3つまで投入できます。';
   }
   function pour(color) {
     if(!color || state.mixed || state.recipe.length>=3){feedback(state.recipe.length>=3?'瓶はいっぱいです。調合するか、リセットしてください。':'先に薬を選んでください。');return;}
     state.recipe.push(color);chosen=null;save();updateLab();
     const bottle=document.getElementById('c2Drop');bottle.classList.remove('c2-bubble');void bottle.offsetWidth;bottle.classList.add('c2-bubble');
     feedback(`${medicineNames[color]}を投入しました。${state.recipe.length} / 3`);
+  }
+  function resetMix() {
+    state.recipe=[];state.mixed=false;state.complete=false;chosen=null;save();render();feedback('調合瓶を空にしました。');
+  }
+  function closeFailure(reset=false,restoreFocus=true) {
+    if(!failureOverlay)return;
+    failureOverlay.remove();failureOverlay=null;delete medical.dataset.mixingFailure;
+    const focus=failureFocus;failureFocus=null;
+    if(reset){resetMix();document.querySelector('[data-medicine="blue"]')?.focus({preventScroll:true});}
+    else if(restoreFocus && focus?.isConnected)focus.focus({preventScroll:true});
+  }
+  function showMixingFailure() {
+    closeFailure(false,false);
+    if(!failureBag.length) {
+      failureBag=[0,1,2];
+      for(let i=failureBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[failureBag[i],failureBag[j]]=[failureBag[j],failureBag[i]];}
+    }
+    const failure=mixingFailures[failureBag.pop()];
+    medical.dataset.mixingFailure=failure.effect;
+    failureFocus=document.activeElement;
+    failureOverlay=document.createElement('div');failureOverlay.className='c2-error-shade';
+    failureOverlay.innerHTML=`<section class="c2-error-dialog" role="alertdialog" aria-modal="true" aria-labelledby="c2ErrorTitle" aria-describedby="c2ErrorDescription"><div class="titlebar"><span id="c2ErrorTitle">${failure.title}</span><button type="button" class="c2-error-close" aria-label="エラーを閉じる">×</button></div><div class="c2-error-body"><span class="c2-error-icon" aria-hidden="true">${failure.icon}</span><div><b>MIXING FAILED</b><p id="c2ErrorDescription">${failure.body}</p><small>${failure.code}</small>${failure.effect==='signal'?'<div class="c2-error-signal" aria-hidden="true">_ _ / _ _ / _ _</div>':''}${failure.effect==='rejected'?'<div class="c2-error-stamp" aria-hidden="true">REJECTED</div>':''}</div></div><div class="c2-error-actions"><button type="button" class="c2-error-close">閉じる</button><button type="button" class="c2-error-reset">瓶をリセット</button></div></section>`;
+    failureOverlay.addEventListener('click',e=>{if(e.target.closest('.c2-error-reset'))closeFailure(true);else if(e.target.closest('.c2-error-close'))closeFailure();});
+    failureOverlay.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeFailure();}
+      if(e.key==='Tab') {
+        const buttons=[...failureOverlay.querySelectorAll('button')],first=buttons[0],last=buttons[buttons.length-1];
+        if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+        else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+      }
+    });
+    document.body.append(failureOverlay);failureOverlay.querySelector('.c2-error-close').focus({preventScroll:true});
   }
   function playDream(id) {
     stopAudio();const d=dreams.find(x=>x.id===id);if(!d)return;
@@ -159,10 +198,10 @@
       state.q2=true;nav('lab');
     }
     if(action==='pour')pour(chosen);
-    if(action==='reset-mix'){state.recipe=[];state.mixed=false;state.complete=false;chosen=null;save();render();feedback('調合瓶を空にしました。');}
+    if(action==='reset-mix')resetMix();
     if(action==='mix'){
       if(state.recipe.length!==3){feedback('薬を3つ投入してください。');return;}
-      if(state.recipe.join(',')!=='blue,red,yellow'){feedback('MIXING FAILED — リセットして、異常が起きた順番に試してください。');return;}
+      if(state.recipe.join(',')!=='blue,red,yellow'){feedback('MIXING FAILED — リセットして、異常が起きた順番に試してください。');showMixingFailure();return;}
       state.mixed=true;save();render();feedback('MEDICINE COMPLETE / PRESCRIPTION SUCCESSFUL');document.querySelector('[data-c2="give"]').focus();
     }
     if(action==='give')startRecovery();
@@ -194,7 +233,7 @@
   app.addEventListener('lostpointercapture',()=>{if(drag)cancelDrag();});
   medical.addEventListener('pointerdown',()=>focusWindow(medical));
   medical.addEventListener('keydown',e=>{if(e.key==='Escape'){if(drag)cancelDrag();else closeWindow(medical);}});
-  new MutationObserver(()=>{if(medical.hidden){stopAudio();cancelDrag();if(recoveryRunning){clearTimers();state.view='lab';save();render();}}}).observe(medical,{attributes:true,attributeFilter:['hidden']});
+  new MutationObserver(()=>{if(medical.hidden){closeFailure(false,false);stopAudio();cancelDrag();if(recoveryRunning){clearTimers();state.view='lab';save();render();}}}).observe(medical,{attributes:true,attributeFilter:['hidden']});
   const storyMail={id:MAIL_ID,date:'DATE UNKNOWN',subject:'ばくの様子がおかしい',body:'ばくが、また眠ってしまいました。\n\nどうやら、壊れた夢を食べてしまったようです。\n\n最後に食べた4つの夢のうち、1つだけが正常ではありません。\n\nバグ夢を見つけて、正しいお薬を与えてください。\n\nただし、バグ夢の記録は一部が書き換えられている可能性があります。\n\n記録をすべて信用しないでください。'};
   if(!content.mails.some(m=>m.id===MAIL_ID))content.mails.push(storyMail);
   titles.medical='DREAM MEDICAL SYSTEM';
