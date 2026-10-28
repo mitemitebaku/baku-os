@@ -53,8 +53,8 @@
 .c2-medicine b {font-size:14px}
 .c2-medicine[aria-pressed=true] {border-style:inset;outline:2px dotted #305970;background:#c9dbdf}
 .c2-bottle {--liquid:#5c8bc1;position:relative;display:block;width:42px;height:52px;background:#d9e7e4;border:3px solid #415c66;border-top:0;margin:14px 5px 0;box-shadow:inset 4px 0 #f9ffff;image-rendering:pixelated;flex-shrink:0}
-.c2-bottle:before {content:'';position:absolute;left:7px;top:-14px;width:22px;height:14px;background:#d9e7e4;border:3px solid #415c66;border-bottom:0}
-.c2-bottle:after {content:'';position:absolute;left:5px;top:-19px;width:26px;height:9px;background:#8e9d9c;border:3px solid #415c66}
+.c2-bottle:before {content:'';position:absolute;left:50%;transform:translateX(-50%);top:-14px;width:22px;height:14px;background:#d9e7e4;border:3px solid #415c66;border-bottom:0}
+.c2-bottle:after {content:'';position:absolute;left:50%;transform:translateX(-50%);top:-19px;width:26px;height:9px;background:#8e9d9c;border:3px solid #415c66}
 .c2-bottle i {position:absolute;inset:12px 3px 3px;background:var(--liquid);border-top:3px solid #ffffff7a}
 .c2-bottle em {position:absolute;left:7px;right:7px;top:18px;font:normal 16px/20px monospace;background:#edf1e6;border:1px solid #425f6988;color:#375460;text-align:center}
 .c2-bottle.red {--liquid:#c96171}.c2-bottle.yellow {--liquid:#ddbf60}.c2-bottle.white {--liquid:#f7f7ee}

@@ -51,7 +51,7 @@
     const list = document.getElementById('mailList'); list.replaceChildren();
     const groups = [
       {label:'お知らせ', story:false, empty:'お知らせはありません。'},
-      {label:'謎解きメール', story:true, empty:'謎解きメールはありません。'}
+      {label:'隰手ｧ｣縺?', story:true, empty:'このカテゴリのメールはありません。'}
     ];
     for(const group of groups) {
       const frame=document.createElement('fieldset'), legend=document.createElement('legend');
